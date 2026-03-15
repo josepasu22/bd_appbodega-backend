@@ -8,11 +8,11 @@ app.use(express.json());
 
 // Conexión con Railway usando pool async/await
 const pool = mysqlPromise.createPool({
-  host: 'centerbeam.proxy.rlwy.net',
-  user: 'root',
-  password: 'fZBTGcwUuIMHEhqhENrUthOoKfegVorv',
-  database: 'railway',
-  port: 57928,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
   ssl: { rejectUnauthorized: false }
 });
 

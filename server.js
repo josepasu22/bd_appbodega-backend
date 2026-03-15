@@ -123,6 +123,53 @@ app.get('/despachos/detalle', async (req, res) => {
   }
 });
 
+// Registrar despacho con validación de stock
+app.post('/despachos', async (req, res) => {
+  const { fecha, colaboradorId, articuloId, cantidad } = req.body;
+
+  if (!fecha || !colaboradorId || !articuloId || !cantidad) {
+    return res.status(400).json({ mensaje: 'Faltan datos en la petición' });
+  }
+
+  try {
+    // 1. Verificar stock
+    const [articulo] = await pool.query('SELECT cantidad FROM articulos WHERE id = ?', [articuloId]);
+    if (articulo.length === 0) return res.status(404).json({ mensaje: 'Artículo no encontrado' });
+
+    const stockActual = articulo[0].cantidad;
+    if (stockActual < cantidad) {
+      return res.status(400).json({ mensaje: 'Stock insuficiente para el despacho' });
+    }
+
+    // 2. Insertar cabecera en despachos
+    const [resultDespacho] = await pool.query(
+      'INSERT INTO despachos (fecha, colaboradorId) VALUES (?, ?)',
+      [fecha, colaboradorId]
+    );
+    const despachoId = resultDespacho.insertId;
+
+    // 3. Insertar detalle
+    await pool.query(
+      'INSERT INTO detalle_despacho (despachoId, articuloId, cantidad) VALUES (?, ?, ?)',
+      [despachoId, articuloId, cantidad]
+    );
+
+    // 4. Reducir stock
+    await pool.query('UPDATE articulos SET cantidad = cantidad - ? WHERE id = ?', [cantidad, articuloId]);
+
+    res.status(201).json({
+      mensaje: 'Despacho registrado y stock actualizado',
+      despachoId,
+      fecha,
+      colaboradorId,
+      articuloId,
+      cantidad
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ------------------- SERVIDOR -------------------
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

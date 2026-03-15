@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión con Railway usando pool async/await
+// Conexión con Railway usando variables de entorno
 const pool = mysqlPromise.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -41,7 +41,7 @@ app.get('/articulos', async (req, res) => {
 app.post('/articulos', async (req, res) => {
   const { descripcion, cantidad, precio } = req.body;
   try {
-    const codigo = 'ART-' + Date.now(); // Generar código único
+    const codigo = 'ART-' + Date.now();
     const [result] = await pool.query(
       'INSERT INTO articulos (codigo, descripcion, cantidad, precio) VALUES (?, ?, ?, ?)',
       [codigo, descripcion, cantidad, precio]
@@ -123,7 +123,6 @@ app.get('/despachos/detalle', async (req, res) => {
   }
 });
 
-// Registrar despacho con validación de stock
 app.post('/despachos', async (req, res) => {
   const { fecha, colaboradorId, articuloId, cantidad } = req.body;
 
@@ -132,7 +131,6 @@ app.post('/despachos', async (req, res) => {
   }
 
   try {
-    // 1. Verificar stock
     const [articulo] = await pool.query('SELECT cantidad FROM articulos WHERE id = ?', [articuloId]);
     if (articulo.length === 0) return res.status(404).json({ mensaje: 'Artículo no encontrado' });
 
@@ -141,20 +139,17 @@ app.post('/despachos', async (req, res) => {
       return res.status(400).json({ mensaje: 'Stock insuficiente para el despacho' });
     }
 
-    // 2. Insertar cabecera en despachos
     const [resultDespacho] = await pool.query(
       'INSERT INTO despachos (fecha, colaboradorId) VALUES (?, ?)',
       [fecha, colaboradorId]
     );
     const despachoId = resultDespacho.insertId;
 
-    // 3. Insertar detalle
     await pool.query(
       'INSERT INTO detalle_despacho (despachoId, articuloId, cantidad) VALUES (?, ?, ?)',
       [despachoId, articuloId, cantidad]
     );
 
-    // 4. Reducir stock
     await pool.query('UPDATE articulos SET cantidad = cantidad - ? WHERE id = ?', [cantidad, articuloId]);
 
     res.status(201).json({

@@ -13,7 +13,7 @@ const pool = mysqlPromise.createPool({
   password: 'fZBTGcwUuIMHEhqhENrUthOoKfegVorv',
   database: 'railway',
   port: 57928,
-  ssl: { rejectUnauthorized: true }
+  ssl: { rejectUnauthorized: false } // aceptar el certificado de Railway
 });
 
 // Ruta de prueba

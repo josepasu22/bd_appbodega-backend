@@ -8,11 +8,11 @@ app.use(express.json());
 
 // Conexión con Railway usando variables de entorno
 const pool = mysqlPromise.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT),
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: Number(process.env.MYSQLPORT),
   ssl: { rejectUnauthorized: false }
 });
 

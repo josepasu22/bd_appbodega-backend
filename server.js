@@ -1,21 +1,10 @@
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2');                // para db con callbacks
-const mysqlPromise = require('mysql2/promise'); // para pool con async/await
+const mysqlPromise = require('mysql2/promise');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Conexión simple con callbacks (db)
-const db = mysql.createConnection({
-  host: 'centerbeam.proxy.rlwy.net',
-  user: 'root',
-  password: 'fZBTGcwUuIMHEhqhENrUthOoKfegVorv',
-  database: 'railway',
-  port: 57928,
-  ssl: { rejectUnauthorized: true } // recomendado para conexiones seguras
-});
 
 // Conexión con async/await (pool)
 const pool = mysqlPromise.createPool({
@@ -27,7 +16,68 @@ const pool = mysqlPromise.createPool({
   ssl: { rejectUnauthorized: true }
 });
 
-module.exports = { db, pool };
+// Ruta de prueba
+app.get('/ping', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT NOW() AS fecha');
+    res.json({ ok: true, fecha: rows[0].fecha });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Ejemplo CRUD de artículos
+app.get('/articulos', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM articulos');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/articulos', async (req, res) => {
+  const { nombre, stock } = req.body;
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO articulos (nombre, stock) VALUES (?, ?)',
+      [nombre, stock]
+    );
+    res.json({ id: result.insertId, nombre, stock });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/articulos/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, stock } = req.body;
+  try {
+    await pool.query(
+      'UPDATE articulos SET nombre = ?, stock = ? WHERE id = ?',
+      [nombre, stock, id]
+    );
+    res.json({ id, nombre, stock });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/articulos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM articulos WHERE id = ?', [id]);
+    res.json({ ok: true, id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Arranque del servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
 
 // ------------------- ENDPOINTS -------------------
 

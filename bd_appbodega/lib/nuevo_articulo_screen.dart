@@ -14,25 +14,35 @@ class _NuevoArticuloScreenState extends State<NuevoArticuloScreen> {
   final TextEditingController precioController = TextEditingController();
   final TextEditingController stockController = TextEditingController();
 
-  Future<void> crearArticulo() async {
-    final response = await http.post(
-      Uri.parse('http://192.168.1.120:3000/articulos'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'descripcion': nombreController.text,
-        'cantidad': int.parse(stockController.text),
-        'precio': double.parse(precioController.text),
-      }),
-    );
+  // URL base de tu backend en Railway
+  static const String baseUrl =
+      "https://bdappbodega-backend-production.up.railway.app";
 
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Artículo creado correctamente')),
+  Future<void> crearArticulo() async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/articulos"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'descripcion': nombreController.text,
+          'cantidad': int.parse(stockController.text),
+          'precio': double.parse(precioController.text),
+        }),
       );
-      Navigator.pop(context);
-    } else {
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Artículo creado correctamente')),
+        );
+        Navigator.pop(context, true); // <- devuelve true para refrescar lista
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al crear artículo: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al crear artículo')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
@@ -40,16 +50,30 @@ class _NuevoArticuloScreenState extends State<NuevoArticuloScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Nuevo artículo")),
+      appBar: AppBar(title: const Text("Nuevo artículo")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: nombreController, decoration: InputDecoration(labelText: "Nombre")),
-            TextField(controller: precioController, decoration: InputDecoration(labelText: "Precio")),
-            TextField(controller: stockController, decoration: InputDecoration(labelText: "Stock")),
-            SizedBox(height: 20),
-            ElevatedButton(onPressed: crearArticulo, child: Text("Guardar")),
+            TextField(
+              controller: nombreController,
+              decoration: const InputDecoration(labelText: "Nombre"),
+            ),
+            TextField(
+              controller: precioController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Precio"),
+            ),
+            TextField(
+              controller: stockController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Stock"),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: crearArticulo,
+              child: const Text("Guardar"),
+            ),
           ],
         ),
       ),

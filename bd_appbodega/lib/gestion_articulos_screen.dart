@@ -14,6 +14,10 @@ class GestionArticulosScreen extends StatefulWidget {
 class _GestionArticulosScreenState extends State<GestionArticulosScreen> {
   List<dynamic> articulos = [];
 
+  // URL base de tu backend en Railway
+  static const String baseUrl =
+      "https://bdappbodega-backend-production.up.railway.app";
+
   @override
   void initState() {
     super.initState();
@@ -21,13 +25,13 @@ class _GestionArticulosScreenState extends State<GestionArticulosScreen> {
   }
 
   Future<void> fetchArticulos() async {
-    final response = await http.get(
-      Uri.parse('http://192.168.1.120:3000/articulos'),
-    );
+    final response = await http.get(Uri.parse("$baseUrl/articulos"));
     if (response.statusCode == 200) {
       setState(() {
         articulos = jsonDecode(response.body);
       });
+    } else {
+      debugPrint("Error al cargar artículos: ${response.statusCode}");
     }
   }
 

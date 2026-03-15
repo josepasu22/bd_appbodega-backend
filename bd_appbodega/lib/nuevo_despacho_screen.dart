@@ -20,6 +20,10 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
   bool cargando = true; // estado de carga
   String? errorMsg;     // mensaje de error
 
+  // URL base de tu backend en Railway
+  static const String baseUrl =
+      "https://bdappbodega-backend-production.up.railway.app";
+
   @override
   void initState() {
     super.initState();
@@ -28,8 +32,8 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
 
   Future<void> cargarDatos() async {
     try {
-      final resArt = await http.get(Uri.parse("http://192.168.1.120:3000/articulos"));
-      final resCol = await http.get(Uri.parse("http://192.168.1.120:3000/colaboradores"));
+      final resArt = await http.get(Uri.parse("$baseUrl/articulos"));
+      final resCol = await http.get(Uri.parse("$baseUrl/colaboradores"));
 
       debugPrint("Respuesta artículos: ${resArt.body}");
       debugPrint("Respuesta colaboradores: ${resCol.body}");
@@ -43,7 +47,8 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
       } else {
         setState(() {
           cargando = false;
-          errorMsg = "Error al cargar datos: ${resArt.statusCode}, ${resCol.statusCode}";
+          errorMsg =
+              "Error al cargar datos: ${resArt.statusCode}, ${resCol.statusCode}";
         });
       }
     } catch (e) {
@@ -70,7 +75,7 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.1.120:3000/despachos"),
+        Uri.parse("$baseUrl/despachos"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "fecha": fechaFormateada,
@@ -83,10 +88,11 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
       debugPrint("Respuesta guardar despacho: ${response.body}");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Navigator.pop(context);
+        Navigator.pop(context, true); // <- devuelve true para refrescar lista
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error al guardar despacho: ${response.statusCode}")),
+          SnackBar(
+              content: Text("Error al guardar despacho: ${response.statusCode}")),
         );
       }
     } catch (e) {
@@ -111,11 +117,12 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
                   : Column(
                       children: [
                         DropdownButtonFormField<dynamic>(
-                          initialValue: articuloSeleccionado,
+                          value: articuloSeleccionado,
                           items: articulos.map((a) {
                             return DropdownMenuItem(
                               value: a,
-                              child: Text("${a['descripcion']} (Stock: ${a['cantidad']})"),
+                              child: Text(
+                                  "${a['descripcion']} (Stock: ${a['cantidad']})"),
                             );
                           }).toList(),
                           onChanged: (val) {
@@ -123,10 +130,11 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
                               articuloSeleccionado = val;
                             });
                           },
-                          decoration: const InputDecoration(labelText: "Artículo"),
+                          decoration:
+                              const InputDecoration(labelText: "Artículo"),
                         ),
                         DropdownButtonFormField<dynamic>(
-                          initialValue: colaboradorSeleccionado,
+                          value: colaboradorSeleccionado,
                           items: colaboradores.map((c) {
                             return DropdownMenuItem(
                               value: c,
@@ -138,14 +146,17 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
                               colaboradorSeleccionado = val;
                             });
                           },
-                          decoration: const InputDecoration(labelText: "Colaborador"),
+                          decoration:
+                              const InputDecoration(labelText: "Colaborador"),
                         ),
                         TextFormField(
                           controller: _cantidadController,
-                          decoration: const InputDecoration(labelText: "Cantidad"),
+                          decoration:
+                              const InputDecoration(labelText: "Cantidad"),
                           keyboardType: TextInputType.number,
-                          validator: (value) =>
-                              value == null || value.isEmpty ? "Ingresa la cantidad" : null,
+                          validator: (value) => value == null || value.isEmpty
+                              ? "Ingresa la cantidad"
+                              : null,
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(

@@ -15,6 +15,10 @@ class DespachosScreen extends StatefulWidget {
 class _DespachosScreenState extends State<DespachosScreen> {
   List<dynamic> despachos = [];
 
+  // URL base de tu backend en Railway
+  static const String baseUrl =
+      "https://bdappbodega-backend-production.up.railway.app";
+
   @override
   void initState() {
     super.initState();
@@ -22,8 +26,7 @@ class _DespachosScreenState extends State<DespachosScreen> {
   }
 
   Future<void> cargarDespachos() async {
-    final response =
-        await http.get(Uri.parse("http://192.168.1.120:3000/despachos/detalle"));
+    final response = await http.get(Uri.parse("$baseUrl/despachos/detalle"));
     if (response.statusCode == 200) {
       setState(() {
         despachos = jsonDecode(response.body);
@@ -46,7 +49,8 @@ class _DespachosScreenState extends State<DespachosScreen> {
           itemCount: despachos.length,
           itemBuilder: (context, index) {
             final d = despachos[index];
-            final fecha = DateFormat("dd/MM/yyyy").format(DateTime.parse(d['fecha']));
+            final fecha =
+                DateFormat("dd/MM/yyyy").format(DateTime.parse(d['fecha']));
             return Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -57,7 +61,8 @@ class _DespachosScreenState extends State<DespachosScreen> {
                 leading: const Icon(Icons.local_shipping, color: Colors.indigo),
                 title: Text(
                   "Despacho ${d['numeroDespacho']}",
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -7,6 +7,10 @@ class ArticuloDetalleScreen extends StatelessWidget {
 
   const ArticuloDetalleScreen({super.key, required this.articulo});
 
+  // URL base de tu backend en Railway
+  static const String baseUrl =
+      "https://bdappbodega-backend-production.up.railway.app";
+
   Future<void> actualizarPrecio(BuildContext context) async {
     final TextEditingController precioController =
         TextEditingController(text: articulo['precio'].toString());
@@ -24,7 +28,7 @@ class ArticuloDetalleScreen extends StatelessWidget {
           TextButton(
             onPressed: () async {
               final response = await http.put(
-                Uri.parse("http://192.168.1.120:3000/articulos/${articulo['id']}"),
+                Uri.parse("$baseUrl/articulos/${articulo['id']}"),
                 headers: {"Content-Type": "application/json"},
                 body: jsonEncode({
                   "descripcion": articulo['descripcion'],
@@ -34,9 +38,11 @@ class ArticuloDetalleScreen extends StatelessWidget {
               );
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(response.statusCode == 200
-                    ? "Precio actualizado correctamente"
-                    : "Error al actualizar precio")),
+                SnackBar(
+                  content: Text(response.statusCode == 200
+                      ? "Precio actualizado correctamente"
+                      : "Error al actualizar precio"),
+                ),
               );
             },
             child: Text("Guardar"),
@@ -63,7 +69,7 @@ class ArticuloDetalleScreen extends StatelessWidget {
           TextButton(
             onPressed: () async {
               final response = await http.put(
-                Uri.parse("http://192.168.1.120:3000/articulos/${articulo['id']}"),
+                Uri.parse("$baseUrl/articulos/${articulo['id']}"),
                 headers: {"Content-Type": "application/json"},
                 body: jsonEncode({
                   "descripcion": articulo['descripcion'],
@@ -73,9 +79,11 @@ class ArticuloDetalleScreen extends StatelessWidget {
               );
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(response.statusCode == 200
-                    ? "Stock actualizado correctamente"
-                    : "Error al actualizar stock")),
+                SnackBar(
+                  content: Text(response.statusCode == 200
+                      ? "Stock actualizado correctamente"
+                      : "Error al actualizar stock"),
+                ),
               );
             },
             child: Text("Guardar"),
@@ -85,22 +93,22 @@ class ArticuloDetalleScreen extends StatelessWidget {
     );
   }
 
-Future<void> eliminarArticulo(BuildContext context) async {
-  final response = await http.delete(
-    Uri.parse("http://192.168.1.120:3000/articulos/${articulo['id']}"),
-  );
+  Future<void> eliminarArticulo(BuildContext context) async {
+    final response = await http.delete(
+      Uri.parse("$baseUrl/articulos/${articulo['id']}"),
+    );
 
-  if (response.statusCode == 200) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Artículo eliminado correctamente")),
-    );
-    Navigator.pop(context, true); // <- devuelve true
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error al eliminar artículo")),
-    );
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Artículo eliminado correctamente")),
+      );
+      Navigator.pop(context, true); // <- devuelve true
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error al eliminar artículo")),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {

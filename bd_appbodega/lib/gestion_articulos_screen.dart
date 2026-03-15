@@ -5,6 +5,8 @@ import 'articulo_detalle_screen.dart';
 import 'nuevo_articulo_screen.dart';
 
 class GestionArticulosScreen extends StatefulWidget {
+  const GestionArticulosScreen({super.key});
+
   @override
   _GestionArticulosScreenState createState() => _GestionArticulosScreenState();
 }

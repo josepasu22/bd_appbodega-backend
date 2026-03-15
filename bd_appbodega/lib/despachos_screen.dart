@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'nuevo_despacho_screen.dart';
 
 class DespachosScreen extends StatefulWidget {
-  const DespachosScreen({Key? key}) : super(key: key);
+  const DespachosScreen({super.key});
 
   @override
   State<DespachosScreen> createState() => _DespachosScreenState();

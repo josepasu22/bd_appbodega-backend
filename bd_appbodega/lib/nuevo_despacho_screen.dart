@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class NuevoDespachoScreen extends StatefulWidget {
-  const NuevoDespachoScreen({Key? key}) : super(key: key); // ✅ key agregado
+  const NuevoDespachoScreen({super.key}); // ✅ key agregado
 
   @override
   State<NuevoDespachoScreen> createState() => _NuevoDespachoScreenState();
@@ -111,7 +111,7 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
                   : Column(
                       children: [
                         DropdownButtonFormField<dynamic>(
-                          value: articuloSeleccionado,
+                          initialValue: articuloSeleccionado,
                           items: articulos.map((a) {
                             return DropdownMenuItem(
                               value: a,
@@ -126,7 +126,7 @@ class _NuevoDespachoScreenState extends State<NuevoDespachoScreen> {
                           decoration: const InputDecoration(labelText: "Artículo"),
                         ),
                         DropdownButtonFormField<dynamic>(
-                          value: colaboradorSeleccionado,
+                          initialValue: colaboradorSeleccionado,
                           items: colaboradores.map((c) {
                             return DropdownMenuItem(
                               value: c,

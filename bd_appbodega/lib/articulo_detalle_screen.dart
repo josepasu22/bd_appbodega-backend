@@ -5,7 +5,7 @@ import 'dart:convert';
 class ArticuloDetalleScreen extends StatelessWidget {
   final Map articulo;
 
-  ArticuloDetalleScreen({required this.articulo});
+  const ArticuloDetalleScreen({super.key, required this.articulo});
 
   Future<void> actualizarPrecio(BuildContext context) async {
     final TextEditingController precioController =

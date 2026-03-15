@@ -1,27 +1,33 @@
 const express = require('express');
-const mysql = require('mysql2');                // para db con callbacks
 const cors = require('cors');
+const mysql = require('mysql2');                // para db con callbacks
 const mysqlPromise = require('mysql2/promise'); // para pool con async/await
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión con callbacks (db)
+// Conexión simple con callbacks (db)
 const db = mysql.createConnection({
-  host: 'localhost',
+  host: 'centerbeam.proxy.rlwy.net',
   user: 'root',
-  password: 'Root2026!', // tu contraseña de MySQL
-  database: 'bodega'
+  password: 'fZBTGcwUuIMHEhqhENrUthOoKfegVorv',
+  database: 'railway',
+  port: 57928,
+  ssl: { rejectUnauthorized: true } // recomendado para conexiones seguras
 });
 
 // Conexión con async/await (pool)
 const pool = mysqlPromise.createPool({
-  host: 'localhost',
+  host: 'centerbeam.proxy.rlwy.net',
   user: 'root',
-  password: 'Root2026!', // tu contraseña de MySQL
-  database: 'bodega'
+  password: 'fZBTGcwUuIMHEhqhENrUthOoKfegVorv',
+  database: 'railway',
+  port: 57928,
+  ssl: { rejectUnauthorized: true }
 });
+
+module.exports = { db, pool };
 
 // ------------------- ENDPOINTS -------------------
 

@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class NuevoArticuloScreen extends StatefulWidget {
+  const NuevoArticuloScreen({super.key});
+
   @override
   _NuevoArticuloScreenState createState() => _NuevoArticuloScreenState();
 }

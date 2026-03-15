@@ -13,7 +13,7 @@ const pool = mysqlPromise.createPool({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: Number(process.env.DB_PORT),
-  
+  ssl: { rejectUnauthorized: false }
 });
 
 // ------------------- ENDPOINTS -------------------
@@ -27,6 +27,16 @@ app.get('/ping', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// 🔹 Prueba de conexión al arrancar
+pool.getConnection()
+  .then(conn => {
+    console.log("Conexión a MySQL exitosa");
+    conn.release();
+  })
+  .catch(err => {
+    console.error("Error conectando a MySQL:", err.message);
+  });
+
 
 // ------------------- ARTÍCULOS -------------------
 app.get('/articulos', async (req, res) => {

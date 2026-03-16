@@ -34,6 +34,15 @@ app.get('/', (req, res) => {
   res.json({ ok: true, mensaje: "Servidor activo en Railway" });
 });
 
+pool.getConnection()
+  .then(conn => {
+    console.log("✅ Conexión MySQL OK");
+    conn.release();
+  })
+  .catch(err => {
+    console.error("❌ Error de conexión MySQL:", err.message);
+  });
+
 // 🔹 Health check
 app.get('/health', (req, res) => {
   res.json({ ok: true, fecha: new Date() });

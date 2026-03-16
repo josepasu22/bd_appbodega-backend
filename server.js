@@ -185,7 +185,7 @@ app.post('/despachos', async (req, res) => {
 });
 
 // ------------------- SERVIDOR -------------------
-const PORT = process.env.PORT || 8080; // 🔹 Railway usa 8080
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });

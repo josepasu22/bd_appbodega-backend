@@ -1,12 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const mysqlPromise = require('mysql2/promise');
+const mysql = require('mysql2/promise'); // <--- ESTA LÍNEA FALTABA
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔹 Conexión con Railway usando variables de entorno
+// Conexión al pool MySQL
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,

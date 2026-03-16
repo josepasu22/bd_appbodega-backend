@@ -35,6 +35,10 @@ pool.getConnection()
   .catch(err => {
     console.error("Error conectando a MySQL:", err.message);
   });
+  
+  app.get('/health', (req, res) => {
+  res.json({ ok: true, fecha: new Date() });
+});
 
 
 // ------------------- ARTÍCULOS -------------------

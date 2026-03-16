@@ -31,6 +31,10 @@ app.get('/ping', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.json({ ok: true, mensaje: "Servidor activo en Railway" });
+});
+
 // 🔹 Health check
 app.get('/health', (req, res) => {
   res.json({ ok: true, fecha: new Date() });

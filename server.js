@@ -6,13 +6,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión con Railway usando variables de entorno
+// 🔹 Conexión con Railway usando variables de entorno
 const pool = mysqlPromise.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: Number(process.env.DB_PORT),
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 // ------------------- ENDPOINTS -------------------
@@ -23,30 +26,26 @@ app.get('/ping', async (req, res) => {
     const [rows] = await pool.query('SELECT NOW() AS fecha');
     res.json({ ok: true, fecha: rows[0].fecha });
   } catch (err) {
+    console.error("Error en /ping:", err);
     res.status(500).json({ error: err.message });
   }
 });
-// 🔹 Prueba de conexión al arrancar
-pool.getConnection()
-  .then(conn => {
-    console.log("Conexión a MySQL exitosa");
-    conn.release();
-  })
-  .catch(err => {
-    console.error("Error conectando a MySQL:", err.message);
-  });
-  
-  app.get('/health', (req, res) => {
+
+// 🔹 Health check
+app.get('/health', (req, res) => {
   res.json({ ok: true, fecha: new Date() });
 });
-
 
 // ------------------- ARTÍCULOS -------------------
 app.get('/articulos', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT id, codigo, descripcion, cantidad, precio FROM articulos');
+    const [rows] = await pool.query(
+      'SELECT id, codigo, descripcion, cantidad, precio FROM articulos'
+    );
+    console.log("Consulta /articulos:", rows);
     res.json(rows);
   } catch (err) {
+    console.error("Error en /articulos:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -59,8 +58,9 @@ app.post('/articulos', async (req, res) => {
       'INSERT INTO articulos (codigo, descripcion, cantidad, precio) VALUES (?, ?, ?, ?)',
       [codigo, descripcion, cantidad, precio]
     );
-    res.json({ id: result.insertId, codigo, descripcion, cantidad, precio });
+    res.status(201).json({ id: result.insertId, codigo, descripcion, cantidad, precio });
   } catch (err) {
+    console.error("Error en POST /articulos:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -76,6 +76,7 @@ app.put('/articulos/:id', async (req, res) => {
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Artículo no encontrado' });
     res.json({ mensaje: 'Artículo actualizado correctamente' });
   } catch (err) {
+    console.error("Error en PUT /articulos:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -87,6 +88,7 @@ app.delete('/articulos/:id', async (req, res) => {
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Artículo no encontrado' });
     res.json({ mensaje: 'Artículo eliminado correctamente' });
   } catch (err) {
+    console.error("Error en DELETE /articulos:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -97,6 +99,7 @@ app.get('/colaboradores', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM colaboradores');
     res.json(rows);
   } catch (err) {
+    console.error("Error en /colaboradores:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -107,6 +110,7 @@ app.get('/despachos', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM despachos');
     res.json(rows);
   } catch (err) {
+    console.error("Error en /despachos:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -132,6 +136,7 @@ app.get('/despachos/detalle', async (req, res) => {
     `);
     res.json(rows);
   } catch (err) {
+    console.error("Error en /despachos/detalle:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -174,12 +179,13 @@ app.post('/despachos', async (req, res) => {
       cantidad
     });
   } catch (err) {
+    console.error("Error en POST /despachos:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 // ------------------- SERVIDOR -------------------
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080; // 🔹 Railway usa 8080
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });

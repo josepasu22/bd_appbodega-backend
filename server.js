@@ -26,6 +26,10 @@ app.get('/ping', async (req, res) => {
   }
 });
 
+app.get('/ping', (req, res) => {
+  res.json({ ok: true, fecha: new Date() });
+});
+
 app.get('/', (req, res) => {
   res.json({ ok: true, mensaje: "Servidor activo en Railway" });
 });

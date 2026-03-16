@@ -6,21 +6,26 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión al pool MySQL usando la URL interna de Railway
+// Conexión al pool MySQL
 const pool = mysql.createPool({
-  uri: process.env.DATABASE_URL, // <- definida en Railway como ${{ MySQL.MYSQL_URL }}
+  uri: process.env.DATABASE_URL,
   connectTimeout: 10000,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
 // ------------------- ENDPOINTS -------------------
 
-// Ruta raíz (health check de Railway)
 app.get('/', (req, res) => {
   res.send('Backend activo en Railway');
 });
 
-// Ruta de prueba
+app.get('/health', (req, res) => {
+  res.json({ ok: true, fecha: new Date() });
+});
+
 app.get('/ping', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT NOW() AS fecha');
@@ -29,21 +34,6 @@ app.get('/ping', async (req, res) => {
     console.error("Error en /ping:", err);
     res.status(500).json({ error: err.message });
   }
-});
-
-// Verificación de conexión al arrancar
-pool.getConnection()
-  .then(conn => {
-    console.log("✅ Conexión MySQL OK");
-    conn.release();
-  })
-  .catch(err => {
-    console.error("❌ Error de conexión MySQL:", err.message);
-  });
-
-// Health check explícito
-app.get('/health', (req, res) => {
-  res.json({ ok: true, fecha: new Date() });
 });
 
 // ------------------- ARTÍCULOS -------------------
@@ -152,33 +142,26 @@ app.get('/despachos/detalle', async (req, res) => {
 
 app.post('/despachos', async (req, res) => {
   const { fecha, colaboradorId, articuloId, cantidad } = req.body;
-
   if (!fecha || !colaboradorId || !articuloId || !cantidad) {
     return res.status(400).json({ mensaje: 'Faltan datos en la petición' });
   }
-
   try {
     const [articulo] = await pool.query('SELECT cantidad FROM articulos WHERE id = ?', [articuloId]);
     if (articulo.length === 0) return res.status(404).json({ mensaje: 'Artículo no encontrado' });
-
     const stockActual = articulo[0].cantidad;
     if (stockActual < cantidad) {
       return res.status(400).json({ mensaje: 'Stock insuficiente para el despacho' });
     }
-
     const [resultDespacho] = await pool.query(
       'INSERT INTO despachos (fecha, colaboradorId) VALUES (?, ?)',
       [fecha, colaboradorId]
     );
     const despachoId = resultDespacho.insertId;
-
     await pool.query(
       'INSERT INTO detalle_despacho (despachoId, articuloId, cantidad) VALUES (?, ?, ?)',
       [despachoId, articuloId, cantidad]
     );
-
     await pool.query('UPDATE articulos SET cantidad = cantidad - ? WHERE id = ?', [cantidad, articuloId]);
-
     res.status(201).json({
       mensaje: 'Despacho registrado y stock actualizado',
       despachoId,
@@ -195,6 +178,17 @@ app.post('/despachos', async (req, res) => {
 
 // ------------------- SERVIDOR -------------------
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
+  
+  // Verificar conexión a MySQL después de que el servidor esté escuchando
+  pool.getConnection()
+    .then(conn => {
+      console.log("✅ Conexión MySQL OK");
+      conn.release();
+    })
+    .catch(err => {
+      console.error("❌ Error de conexión MySQL:", err.message);
+    });
 });

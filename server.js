@@ -8,12 +8,17 @@ app.use(express.json());
 
 // Conexión al pool MySQL usando la URL interna de Railway
 const pool = mysql.createPool({
-  uri: process.env.DATABASE_URL, // <- esta variable la defines en Railway como ${{ MySQL.MYSQL_URL }}
+  uri: process.env.DATABASE_URL, // <- definida en Railway como ${{ MySQL.MYSQL_URL }}
   connectTimeout: 10000,
   ssl: { rejectUnauthorized: false }
 });
 
 // ------------------- ENDPOINTS -------------------
+
+// Ruta raíz (health check de Railway)
+app.get('/', (req, res) => {
+  res.send('Backend activo en Railway');
+});
 
 // Ruta de prueba
 app.get('/ping', async (req, res) => {
@@ -26,18 +31,6 @@ app.get('/ping', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
-  res.send('Backend activo');
-}); 
-
-app.get('/ping', (req, res) => {
-  res.json({ ok: true, fecha: new Date() });
-});
-
-app.get('/', (req, res) => {
-  res.json({ ok: true, mensaje: "Servidor activo en Railway" });
-});
-
 // Verificación de conexión al arrancar
 pool.getConnection()
   .then(conn => {
@@ -48,7 +41,7 @@ pool.getConnection()
     console.error("❌ Error de conexión MySQL:", err.message);
   });
 
-// Health check
+// Health check explícito
 app.get('/health', (req, res) => {
   res.json({ ok: true, fecha: new Date() });
 });
@@ -59,7 +52,6 @@ app.get('/articulos', async (req, res) => {
     const [rows] = await pool.query(
       'SELECT id, codigo, descripcion, cantidad, precio FROM articulos'
     );
-    console.log("Consulta /articulos:", rows);
     res.json(rows);
   } catch (err) {
     console.error("Error en /articulos:", err);
@@ -203,7 +195,6 @@ app.post('/despachos', async (req, res) => {
 
 // ------------------- SERVIDOR -------------------
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });

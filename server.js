@@ -26,6 +26,10 @@ app.get('/ping', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.send('Backend activo');
+}); 
+
 app.get('/ping', (req, res) => {
   res.json({ ok: true, fecha: new Date() });
 });

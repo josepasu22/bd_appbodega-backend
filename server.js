@@ -1,20 +1,16 @@
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2/promise'); // <--- ESTA LÍNEA FALTABA
+const mysql = require('mysql2/promise');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión al pool MySQL
+// Conexión al pool MySQL usando la URL interna de Railway
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
+  uri: process.env.DATABASE_URL, // <- esta variable la defines en Railway como ${{ MySQL.MYSQL_URL }}
   connectTimeout: 10000,
-  ssl: { rejectUnauthorized: false } // fuerza TCP/SSL
+  ssl: { rejectUnauthorized: false }
 });
 
 // ------------------- ENDPOINTS -------------------
@@ -34,6 +30,7 @@ app.get('/', (req, res) => {
   res.json({ ok: true, mensaje: "Servidor activo en Railway" });
 });
 
+// Verificación de conexión al arrancar
 pool.getConnection()
   .then(conn => {
     console.log("✅ Conexión MySQL OK");
@@ -43,7 +40,7 @@ pool.getConnection()
     console.error("❌ Error de conexión MySQL:", err.message);
   });
 
-// 🔹 Health check
+// Health check
 app.get('/health', (req, res) => {
   res.json({ ok: true, fecha: new Date() });
 });
